@@ -1,6 +1,13 @@
-.vscode/
-network_env/
-migrations/
-__pycache__/
-db.sqlite3
+# Environment
+.vscode
+network_env
 .DS_Store
+
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__
+db.sqlite3
+media
+migrations

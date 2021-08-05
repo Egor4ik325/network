@@ -2,8 +2,8 @@
 
 CRUD component design:
 
-1. URL
-2. Model
+1. Model
+2. URL
 3. Form
 4. View
 5. Template

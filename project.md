@@ -1,6 +1,7 @@
-# Project specs
+# Project features
 
 Core:
+
 - new post
 - all posts
 - profile page
@@ -9,12 +10,17 @@ Core:
 - edit post
 - like/unlike post
 
-Add software development:
+New (software development):
+
 - manual testing
 - Django unit testing
 - client-side testing
 - CI best practicies
 - GitHub Actions
 - GitHub project development
-- Doker project container
+- Docker project container
 - Deploy project in production
+
+New (Django framework):
+
+- slug model field
