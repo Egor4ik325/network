@@ -1,5 +1,19 @@
-from django.shortcuts import render
+from django.views.generic import TemplateView, ListView, DetailView
+
+from .models import Post
 
 
-def index(request):
-    return render(request, "network/index.html")
+class IndexView(TemplateView):
+    template_name = "network/index.html"
+
+
+class PostListView(ListView):
+    model = Post
+    template_name = "network/posts.html"
+    context_object_name = 'posts'
+
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = "network/post.html"
+    context_object_name = 'post'
