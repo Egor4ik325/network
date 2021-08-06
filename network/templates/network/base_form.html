@@ -1,0 +1,13 @@
+{# Server-side form rendering #}
+
+{% if pk %}
+    {% url url pk as post_url %}
+{% else %}
+    {% url url as post_url %}
+{% endif %}
+
+<form action="{{ post_url }}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit">
+</form>

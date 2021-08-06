@@ -2,12 +2,13 @@
 
 Core:
 
-- new post
-- all posts
+- Posts:
+    - new post
+    - all posts
+    - edit post
+    - posts pagination
 - profile page
 - user following
-- posts pagination
-- edit post
 - like/unlike post
 
 New (software development):
@@ -23,4 +24,5 @@ New (software development):
 
 New (Django framework):
 
+- built-in class-based generic views
 - slug model field

@@ -1,0 +1,12 @@
+{% extends 'network/layout.html' %}
+
+{% block body %}
+    <h3 class="mb-4">Confirm post delete</h3>
+
+    {# Actually delete a post (POST request) #}
+    <form action="{% url 'post_delete' post.pk %}" method="POST">
+        {% csrf_token %}
+        <p>Are you sure you want to delete post <a href="{{ post.get_absolute_url }}"><b>{{ post }}</b></a>?</p>
+        <input class="btn btn-danger" type="submit" value="Yes, DELETE">
+    </form>
+{% endblock body %}

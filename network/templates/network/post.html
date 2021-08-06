@@ -3,6 +3,17 @@
 {% block body %}
 
     <h2>{{ post.title }}</h2>
+    <div class="dropdown mb-4">
+        <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+            <li><a class="dropdown-item" href="{% url 'post_update' post.pk %}">Update</a></li>
+            <li><a class="dropdown-item" href="{% url 'post_delete' post.pk %}">Delete</a></li>
+        </ul>
+    </div>
+    
+
     <p>{{ post.body }}</p>
 
 {% endblock body %}
