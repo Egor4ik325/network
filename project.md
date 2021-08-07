@@ -11,16 +11,18 @@ Core:
 - user following
 - like/unlike post
 
-New (software development):
+New (software development process):
 
-- manual testing
-- Django unit testing
-- client-side testing
-- CI best practicies
-- GitHub Actions
-- GitHub project development
-- Docker project container
-- Deploy project in production
+- Testing:
+    - manual testing
+    - Django unit testing
+    - client-side testing
+- CI best practicies:
+    - GitHub Actions
+    - GitHub project development
+- Deployment/release:
+    - Docker project container
+    - Deploy project in production
 
 New (Django framework):
 
