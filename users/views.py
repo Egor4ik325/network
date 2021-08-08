@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import User
+from .models import CustomUser
 
 
 def login_view(request):
@@ -47,7 +47,7 @@ def register(request):
 
         # Attempt to create new user
         try:
-            user = User.objects.create_user(username, email, password)
+            user = CustomUser.objects.create_user(username, email, password)
             user.save()
         except IntegrityError:
             return render(request, "users/register.html", {
