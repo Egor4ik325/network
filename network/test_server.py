@@ -5,7 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Post
 
 
-class PostMangerTests(TestCase):
+class PostModelManagerTests(TestCase):
     """Test model instances creation, retrieving and deleting."""
 
     def test_create_post(self):
