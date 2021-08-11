@@ -1,11 +1,14 @@
 {% extends 'network/layout.html' %}
 
 {% block body %}
-    {% for post in posts %}
-        <ul>
+    <ul id="posts">
+        {% for post in posts %}
             <li>
                 <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
             </li>
-        </ul>
-    {% endfor %}
+        {% endfor %}
+    </ul>
+
+    <a id="post-create" class="btn btn-primary" href="{% url 'post_create' %}">Create Post</a>
+
 {% endblock body %}
