@@ -13,6 +13,9 @@ Core:
 
 New (software development process):
 
+1. server-side/client-side/continuous testing
+1. project (webapp) isolation (containerization)
+
 - Testing:
     - manual testing
     - Django unit testing
