@@ -11,7 +11,8 @@ class PostModelManagerTests(TestCase):
     def test_create_post(self):
         """Test create new post instance."""
         p1 = Post.objects.create(title="Foo title", body="Foo body")
-        self.assertTrue(Post.objects.filter(id=p1.id).exists())
+        created_post = Post.objects.get(id=p1.id)
+        self.assertEqual(created_post.slug, 'foo-title')
 
 
 class PostModelTests(TestCase):
@@ -47,8 +48,8 @@ class PostViewTests(TestCase):
         self.assertEqual(r1.context['post'].id, p1.id)
 
     def test_invalid_post(self):
-        """Test /post/<id> URL route (post with such id doesn't exists)."""
-        new_slug = 'something-simmilar-to-slug'
+        """Test /post/<slug> URL route (slug doesn't exists)."""
+        new_slug = 'something-similar-to-slug'
 
         c = Client()
         r = c.get(f'/posts/{new_slug}/')
