@@ -8,8 +8,8 @@
             Menu
         </button>
         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-            <li><a id="post-update" class="dropdown-item" href="{% url 'post_update' post.pk %}">Update</a></li>
-            <li><a id="post-delete" class="dropdown-item" href="{% url 'post_delete' post.pk %}">Delete</a></li>
+            <li><a id="post-update" class="dropdown-item" href="{% url 'post_update' post.slug %}">Update</a></li>
+            <li><a id="post-delete" class="dropdown-item" href="{% url 'post_delete' post.slug %}">Delete</a></li>
         </ul>
     </div>
     

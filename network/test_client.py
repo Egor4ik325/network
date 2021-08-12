@@ -55,7 +55,7 @@ class PostTemplateTests(LiveServerTestCase):
         posts = post_ul.find_elements_by_tag_name('li')
         a = posts[0].find_element_by_tag_name('a')
         a.click()
-        post_url = f'{self.live_server_url}/posts/{p1.id}/'
+        post_url = f'{self.live_server_url}/posts/{p1.slug}/'
         self.assertEqual(self.selenium.current_url, post_url)
 
         # Assert valid HTML DOM
@@ -83,10 +83,10 @@ class PostTemplateTests(LiveServerTestCase):
         title_input.send_keys(title)
         body_textarea.send_keys(body)
         submit.click()
-        self.assertRegex(self.selenium.current_url,
-                         rf'{self.live_server_url}/posts/\d+/')
         self.assertEqual(Post.objects.count(), 4)
         created_post = Post.objects.last()
+        self.assertRegex(self.selenium.current_url,
+                         created_post.get_absolute_url())
         self.assertEqual(created_post.title, title)
         self.assertEqual(created_post.body, body)
 
@@ -96,13 +96,13 @@ class PostTemplateTests(LiveServerTestCase):
         p1 = Post.objects.first()
 
         # Assert valid href
-        post_url = f'{self.live_server_url}/posts/{p1.id}/'
+        post_url = f'{self.live_server_url}/posts/{p1.slug}/'
         self.selenium.get(post_url)
         menu_button = self.selenium.find_element_by_id('menu-button')
         menu_button.click()
         a_post_update = self.selenium.find_element_by_id('post-update')
         a_post_update.click()
-        post_create_url = f'{self.live_server_url}/posts/update/{p1.id}/'
+        post_create_url = f'{self.live_server_url}/posts/update/{p1.slug}/'
         self.assertEqual(self.selenium.current_url, post_create_url)
 
         # Assert update logic from HTML form
@@ -116,10 +116,10 @@ class PostTemplateTests(LiveServerTestCase):
         title_input.send_keys(title)
         body_textarea.send_keys(body)
         submit.click()
-        self.assertRegex(self.selenium.current_url,
-                         rf'{self.live_server_url}/posts/\d+/')
         self.assertEqual(Post.objects.count(), 3)
         updated_post = Post.objects.get(id=p1.id)
+        self.assertRegex(self.selenium.current_url,
+                         updated_post.get_absolute_url())
         self.assertEqual(updated_post.title, title)
         self.assertEqual(updated_post.body, body)
 
@@ -130,13 +130,13 @@ class PostTemplateTests(LiveServerTestCase):
         p1 = Post.objects.first()
 
         # Assert valid href
-        post_url = f'{self.live_server_url}/posts/{p1.id}/'
+        post_url = f'{self.live_server_url}/posts/{p1.slug}/'
         self.selenium.get(post_url)
         menu_button = self.selenium.find_element_by_id('menu-button')
         menu_button.click()
         a_post_delete = self.selenium.find_element_by_id('post-delete')
         a_post_delete.click()
-        post_delete_url = f'{self.live_server_url}/posts/delete/{p1.id}/'
+        post_delete_url = f'{self.live_server_url}/posts/delete/{p1.slug}/'
         self.assertEqual(self.selenium.current_url, post_delete_url)
 
         # Assert delete confirmation form (submit)

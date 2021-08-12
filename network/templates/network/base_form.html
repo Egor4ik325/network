@@ -1,7 +1,8 @@
 {# Server-side form rendering #}
 
-{% if pk %}
-    {% url url pk as post_url %}
+{# Determine url to which send a form #}
+{% if slug %}
+    {% url url slug as post_url %}
 {% else %}
     {% url url as post_url %}
 {% endif %}

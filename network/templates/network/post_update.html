@@ -1,5 +1,5 @@
 {% extends 'network/layout.html' %}
 
 {% block body %}
-    {% include 'network/base_form.html' with url="post_update" pk=post.pk %}
+    {% include 'network/base_form.html' with url="post_update" slug=post.slug %}
 {% endblock body %}
