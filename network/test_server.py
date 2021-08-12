@@ -41,17 +41,17 @@ class PostViewTests(TestCase):
         p1 = Post.objects.get(id=1)
 
         c = Client()
-        r1 = c.get(f'/posts/{p1.id}/')
+        r1 = c.get(f'/posts/{p1.slug}/')
 
         self.assertEqual(r1.status_code, 200)
         self.assertEqual(r1.context['post'].id, p1.id)
 
     def test_invalid_post(self):
         """Test /post/<id> URL route (post with such id doesn't exists)."""
-        max_id = Post.objects.all().aggregate(Max('id'))['id__max']
+        new_slug = 'something-simmilar-to-slug'
 
         c = Client()
-        r = c.get(f'/posts/{max_id + 1}/')
+        r = c.get(f'/posts/{new_slug}/')
 
         # Resource not found error
         self.assertEqual(r.status_code, 404)
@@ -64,7 +64,7 @@ class PostViewTests(TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertIsNotNone(r.context.get('form'))
 
-        test_data = {'title': 'Bar title', 'body': 'Bar body'}
+        test_data = {'title': 'Boom title', 'body': 'Boom body'}
         r2 = c.post('/posts/create/', data=test_data)
         self.assertEqual(r2.status_code, 302)  # redirect to /posts/
         created_post = Post.objects.last()
@@ -72,7 +72,7 @@ class PostViewTests(TestCase):
         self.assertEqual(created_post.body, test_data['body'])
         # Assert redirect location
         self.assertEqual(r2.headers.get('Location'),
-                         f'/posts/{created_post.id}/')
+                         f'/posts/{created_post.slug}/')
 
     def test_update_post(self):
         """
@@ -83,12 +83,12 @@ class PostViewTests(TestCase):
 
         # GET update page with form
         p1 = Post.objects.get(id=1)
-        r = c.get(f'/posts/update/{p1.id}/')
+        r = c.get(f'/posts/update/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
         # POST update data to update model
         test_data = {'title': 'New title', 'body': 'New body'}
-        r2 = c.post(f'/posts/update/{p1.id}/', test_data)
+        r2 = c.post(f'/posts/update/{p1.slug}/', test_data)
         self.assertEqual(r2.status_code, 302)
         updated_post = Post.objects.get(id=1)
         self.assertEqual(updated_post.title, test_data['title'])
@@ -100,11 +100,11 @@ class PostViewTests(TestCase):
 
         # GET delete confirm page
         p1 = Post.objects.get(id=1)
-        r = c.get(f'/posts/delete/{p1.id}/')
+        r = c.get(f'/posts/delete/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
         # POST delete object
-        r2 = c.post(f'/posts/delete/{p1.id}/')
+        r2 = c.post(f'/posts/delete/{p1.slug}/')
         self.assertEqual(r2.status_code, 302)
         self.assertEqual(r2.headers['Location'], '/posts/')
         # Test object is deleted

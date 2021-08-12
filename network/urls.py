@@ -10,8 +10,10 @@ urlpatterns = [
 
     # Post CRUD (display & alter)
     path('posts/', PostListView.as_view(), name='posts'),
-    path('posts/<int:pk>/', PostDetailView.as_view(), name='post'),
     path('posts/create/', PostCreateView.as_view(), name='post_create'),
-    path('posts/update/<int:pk>/', PostUpdateView.as_view(), name='post_update'),
-    path('posts/delete/<int:pk>/', PostDeleteView.as_view(), name='post_delete'),
+    path('posts/<slug:slug>/', PostDetailView.as_view(), name='post'),
+    path('posts/update/<slug:slug>/',
+         PostUpdateView.as_view(), name='post_update'),
+    path('posts/delete/<slug:slug>/',
+         PostDeleteView.as_view(), name='post_delete'),
 ]
