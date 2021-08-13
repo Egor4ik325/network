@@ -125,3 +125,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # URL to refer to static files in the root
 STATIC_URL = '/static/'
+
+# Constant for login_required redirection
+LOGIN_URL = '/login/'

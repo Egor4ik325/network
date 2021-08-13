@@ -1,8 +1,10 @@
 from django.urls import reverse_lazy
 from django.views.generic import (
-    TemplateView, ListView, DetailView,
-    CreateView, UpdateView, DeleteView,
+    TemplateView,
+    ListView, DetailView, CreateView, UpdateView, DeleteView,
 )
+from django.views.generic.edit import FormMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import Post
 
@@ -23,19 +25,43 @@ class PostDetailView(DetailView):
     context_object_name = 'post'
 
 
-class PostCreateView(CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name_suffix = "_create"
     fields = ['title', 'body']
 
+    def form_valid(self, form):
+        """Override logic when POST form is valid.
+        Bind form instance to the request.user."""
+        self.object = form.save(commit=False)
+        self.object.poster = self.request.user
+        self.object.save()
 
-class PostUpdateView(UpdateView):
+        # Redirect to self.get_success_url()
+        return FormMixin.form_valid(self, form)
+
+
+class OwnerRequiredMixin(UserPassesTestMixin):
+    """Owner required feature mixin for UpdateView and DeleteView."""
+
+    permission_denied_message = "You are not allowed to udpate/delete other's post!"
+
+    def test_func(self):
+        """Verify user is authenticated and owns requested post (for update/delete)."""
+        user = self.request.user
+        slug = self.kwargs['slug']
+        post = Post.objects.get(slug=slug)
+        return user.is_authenticated and post.poster == user
+
+
+class PostUpdateView(OwnerRequiredMixin, UpdateView):
     model = Post
     template_name_suffix = "_update"
     fields = ['title', 'body']
 
 
-class PostDeleteView(DeleteView):
+class PostDeleteView(OwnerRequiredMixin, DeleteView):
+
     model = Post
     # on GET request
     template_name_suffix = '_confirm_delete'
