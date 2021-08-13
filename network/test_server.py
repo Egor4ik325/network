@@ -1,6 +1,7 @@
 from django.test import Client, TestCase
 from django.db.models import Max
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import get_user_model
 
 from .models import Post
 
@@ -8,9 +9,14 @@ from .models import Post
 class PostModelManagerTests(TestCase):
     """Test model instances creation, retrieving and deleting."""
 
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser", password="testpassword")
+
     def test_create_post(self):
         """Test create new post instance."""
-        p1 = Post.objects.create(title="Foo title", body="Foo body")
+        p1 = Post.objects.create(
+            poster=self.user, title="Foo title", body="Foo body")
         created_post = Post.objects.get(id=p1.id)
         self.assertEqual(created_post.slug, 'foo-title')
 
@@ -23,17 +29,28 @@ class PostModelTests(TestCase):
 class PostViewTests(TestCase):
     """Test URLs (view behavior) and response contexts (templates)."""
 
+    @classmethod
+    def setUpClass(cls):
+        """Setup for all tests (common setup)."""
+        super().setUpClass()
+        cls.user = get_user_model().objects.create_user(
+            username="testuser", password="testpassword")
+        cls.user2 = get_user_model().objects.create_user(
+            username="testuser2", password="testpassword2")
+        cls.c = Client()
+
     def setUp(self):
-        """Setup database."""
-        p1 = Post.objects.create(title="Foo title", body="Foo body")
-        p2 = Post.objects.create(title="Bar title", body="Bar body")
-        p3 = Post.objects.create(title="Egg title", body="Egg body")
+        """Set up database before every test."""
+        p1 = Post.objects.create(
+            poster=self.user, title="Foo title", body="Foo body")
+        p2 = Post.objects.create(
+            poster=self.user, title="Bar title", body="Bar body")
+        p3 = Post.objects.create(
+            poster=self.user2, title="Egg title", body="Egg body")
 
     def test_posts(self):
         """Test /posts/ URL route."""
-        c = Client()
-        r = c.get('/posts/')
-
+        r = self.c.get('/posts/')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.context['posts'].count(), 3)
 
@@ -41,9 +58,7 @@ class PostViewTests(TestCase):
         """Test /post/<id> URL route (valid id)."""
         p1 = Post.objects.get(id=1)
 
-        c = Client()
-        r1 = c.get(f'/posts/{p1.slug}/')
-
+        r1 = self.c.get(f'/posts/{p1.slug}/')
         self.assertEqual(r1.status_code, 200)
         self.assertEqual(r1.context['post'].id, p1.id)
 
@@ -51,22 +66,20 @@ class PostViewTests(TestCase):
         """Test /post/<slug> URL route (slug doesn't exists)."""
         new_slug = 'something-similar-to-slug'
 
-        c = Client()
-        r = c.get(f'/posts/{new_slug}/')
-
+        r = self.c.get(f'/posts/{new_slug}/')
         # Resource not found error
         self.assertEqual(r.status_code, 404)
 
     def test_create_post(self):
         """Test create post view (GET, POST logic)."""
-        c = Client()
+        self.c.login(username="testuser", password="testpassword")
 
-        r = c.get('/posts/create/')
+        r = self.c.get('/posts/create/')
         self.assertEqual(r.status_code, 200)
         self.assertIsNotNone(r.context.get('form'))
 
         test_data = {'title': 'Boom title', 'body': 'Boom body'}
-        r2 = c.post('/posts/create/', data=test_data)
+        r2 = self.c.post('/posts/create/', data=test_data)
         self.assertEqual(r2.status_code, 302)  # redirect to /posts/
         created_post = Post.objects.last()
         self.assertEqual(created_post.title, test_data['title'])
@@ -80,16 +93,16 @@ class PostViewTests(TestCase):
         Test GET update page with update form.
         Test POST update form data and update post instance.
         """
-        c = Client()
+        self.c.login(username="testuser", password="testpassword")
 
         # GET update page with form
         p1 = Post.objects.get(id=1)
-        r = c.get(f'/posts/update/{p1.slug}/')
+        r = self.c.get(f'/posts/update/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
         # POST update data to update model
         test_data = {'title': 'New title', 'body': 'New body'}
-        r2 = c.post(f'/posts/update/{p1.slug}/', test_data)
+        r2 = self.c.post(f'/posts/update/{p1.slug}/', test_data)
         self.assertEqual(r2.status_code, 302)
         updated_post = Post.objects.get(id=1)
         self.assertEqual(updated_post.title, test_data['title'])
@@ -97,15 +110,15 @@ class PostViewTests(TestCase):
 
     def test_delete_post(self):
         """Test delete confirmation page & view delete logic."""
-        c = Client()
+        self.c.login(username="testuser", password="testpassword")
 
         # GET delete confirm page
         p1 = Post.objects.get(id=1)
-        r = c.get(f'/posts/delete/{p1.slug}/')
+        r = self.c.get(f'/posts/delete/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
         # POST delete object
-        r2 = c.post(f'/posts/delete/{p1.slug}/')
+        r2 = self.c.post(f'/posts/delete/{p1.slug}/')
         self.assertEqual(r2.status_code, 302)
         self.assertEqual(r2.headers['Location'], '/posts/')
         # Test object is deleted

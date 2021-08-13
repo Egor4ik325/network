@@ -1,4 +1,6 @@
 from django.test import LiveServerTestCase
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.common.keys import Keys
 from re import match
@@ -18,9 +20,19 @@ class PostTemplateTests(LiveServerTestCase):
 
     def setUp(self):
         """Setup database for further testing. Call before every test."""
-        p1 = Post.objects.create(title="Foo title", body="Foo body")
-        p2 = Post.objects.create(title="Bar title", body="Bar body")
-        p3 = Post.objects.create(title="Egg title", body="Egg body")
+        # Create test users
+        self.user = get_user_model().objects.create_user(
+            username="testuser", password="testpassword")
+        self.user2 = get_user_model().objects.create_user(
+            username="testuser2", password="testpassword2")
+
+        # Create test posts
+        p1 = Post.objects.create(
+            poster=self.user, title="Foo title", body="Foo body")
+        p2 = Post.objects.create(
+            poster=self.user, title="Bar title", body="Bar body")
+        p3 = Post.objects.create(
+            poster=self.user2, title="Egg title", body="Egg body")
 
     @classmethod
     def tearDownClass(cls):
@@ -64,8 +76,28 @@ class PostTemplateTests(LiveServerTestCase):
         self.assertEqual(title.text, p1.title)
         self.assertEqual(body.text, p1.body)
 
+    def login(self):
+        """
+        Log client into the account.
+        Note: it doesn't perform login/register tests/asserts.
+        """
+        login_url = f"{self.live_server_url}{reverse('login')}"
+        self.selenium.get(login_url)
+        username_input = self.selenium.find_element_by_css_selector(
+            'input[name=username]')
+        password_input = self.selenium.find_element_by_css_selector(
+            'input[name=password]')
+        submit = self.selenium.find_element_by_css_selector(
+            'input[type=submit]')
+        username, password = "testuser", "testpassword"
+        username_input.send_keys(username)
+        password_input.send_keys(password)
+        submit.click()
+
     def test_post_create(self):
         """Assert post create form is valid (client-side validation)."""
+        self.login()
+
         # Assert valid href URL
         posts_url = f'{self.live_server_url}/posts/'
         self.selenium.get(posts_url)
@@ -92,6 +124,8 @@ class PostTemplateTests(LiveServerTestCase):
 
     def test_post_update(self):
         """Assert post update form is valid + valid <a>'s href URL."""
+        self.login()
+
         # Testing post
         p1 = Post.objects.first()
 
@@ -126,6 +160,8 @@ class PostTemplateTests(LiveServerTestCase):
     def test_post_delete(self):
         """Test that HTML for deleting post is working.
         Assert form validation and submit action."""
+        self.login()
+
         # Testing post
         p1 = Post.objects.first()
 
