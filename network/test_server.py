@@ -1,6 +1,6 @@
 from django.test import Client, TestCase
 from django.db.models import Max
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.contrib.auth import get_user_model
 
 from .models import Post
@@ -23,6 +23,28 @@ class PostModelManagerTests(TestCase):
 
 class PostModelTests(TestCase):
     """Test model logic (fields & methods)."""
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="testuser", password="testpassword")
+
+    def test_post_validation(self):
+        """Test Post model data validation."""
+        p1 = Post(poster=self.user, title="create",
+                  body="Post with invalid title")
+        p2 = Post(poster=self.user, title="update",
+                  body="Post with invalid title")
+        p3 = Post(poster=self.user, title="delete",
+                  body="Post with invalid title")
+
+        # Assert raise ValidationError
+        with self.assertRaises(ValidationError):
+            p1.full_clean()
+            p2.full_clean()
+            p3.full_clean()
+
+
+class PostModelFormTests(TestCase):
     pass
 
 
