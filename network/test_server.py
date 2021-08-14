@@ -1,4 +1,5 @@
 from django.test import Client, TestCase
+from django.urls import reverse
 from django.db.models import Max
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.contrib.auth import get_user_model
@@ -27,6 +28,8 @@ class PostModelTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(
             username="testuser", password="testpassword")
+        self.user2 = get_user_model().objects.create_user(
+            username="testuser2", password="testpassword2")
 
     def test_post_validation(self):
         """Test Post model data validation."""
@@ -34,7 +37,7 @@ class PostModelTests(TestCase):
                   body="Post with invalid title")
         p2 = Post(poster=self.user, title="update",
                   body="Post with invalid title")
-        p3 = Post(poster=self.user, title="delete",
+        p3 = Post(poster=self.user2, title="delete",
                   body="Post with invalid title")
 
         # Assert raise ValidationError
@@ -110,6 +113,12 @@ class PostViewTests(TestCase):
         self.assertEqual(r2.headers.get('Location'),
                          f'/posts/{created_post.slug}/')
 
+    def test_create_post_login_required(self):
+        """Test user should be authenticated to create posts."""
+        r = self.c.get(reverse('post_create'))
+        self.assertEqual(r.status_code, 302)
+        self.assertRegex(r.headers['Location'], reverse('login'))
+
     def test_update_post(self):
         """
         Test GET update page with update form.
@@ -130,6 +139,21 @@ class PostViewTests(TestCase):
         self.assertEqual(updated_post.title, test_data['title'])
         self.assertEqual(updated_post.body, test_data['body'])
 
+    def test_update_post_login_required(self):
+        """Test user should be authenticated to update any posts."""
+        p1 = Post.objects.get(id=1)
+        r = self.c.get(reverse('post_update', kwargs={'slug': p1.slug}))
+        self.assertEqual(r.status_code, 302)
+        self.assertRegex(r.headers['Location'], reverse('login'))
+
+    def test_update_post_owner_required(self):
+        """Test user should be owner to update posts."""
+        self.c.login(username="testuser", password="testpassword")
+        p3 = Post.objects.get(id=3)
+        r = self.c.get(reverse('post_update', kwargs={'slug': p3.slug}))
+        # Access forbidden
+        self.assertEqual(r.status_code, 403)
+
     def test_delete_post(self):
         """Test delete confirmation page & view delete logic."""
         self.c.login(username="testuser", password="testpassword")
@@ -146,3 +170,18 @@ class PostViewTests(TestCase):
         # Test object is deleted
         with self.assertRaises(ObjectDoesNotExist):
             Post.objects.get(id=p1.id)
+
+    def test_delete_post_login_required(self):
+        """Test user should be authenticated to delete any posts."""
+        p1 = Post.objects.get(id=1)
+        r = self.c.get(reverse('post_delete', kwargs={'slug': p1.slug}))
+        self.assertEqual(r.status_code, 302)
+        self.assertEqual(r.headers['Location'], reverse('login'))
+
+    def test_delete_post_login_required(self):
+        """Test user should be owner to update posts."""
+        self.c.login(username="testuser", password="testpassword")
+        p3 = Post.objects.get(id=3)
+        r = self.c.get(reverse('post_delete', kwargs={'slug': p3.slug}))
+        # Access forbidden
+        self.assertEqual(r.status_code, 403)
