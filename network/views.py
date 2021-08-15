@@ -1,10 +1,13 @@
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import (
     TemplateView,
     ListView, DetailView, CreateView, UpdateView, DeleteView,
 )
 from django.views.generic.edit import FormMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 
 from .models import Post
 
@@ -68,3 +71,19 @@ class PostDeleteView(OwnerRequiredMixin, DeleteView):
     context_object_name = 'post'
     # on POST request
     success_url = reverse_lazy('posts')
+
+
+class PostLikeView(LoginRequiredMixin, View):
+    """Switch post like state for current user."""
+
+    def post(self, request, *args, **kwargs):
+        """Like/unlike post."""
+        post_object = get_object_or_404(Post, slug=self.kwargs['slug'])
+
+        if request.user in post_object.likers.all():
+            post_object.likers.remove(request.user)
+        else:
+            post_object.likers.add(request.user)
+
+        # Response status_code=200
+        return HttpResponse()

@@ -9,12 +9,18 @@ from django.core.exceptions import ValidationError
 class Post(models.Model):
     """User post on the website."""
     poster = models.ForeignKey("users.CustomUser", verbose_name=_(
-        "Post author"), on_delete=models.CASCADE)
+        "Post author"), on_delete=models.CASCADE, related_name='posts')
     title = models.CharField(_("Post title"), max_length=50)
     body = models.TextField(_("Post content body"))
     slug = models.SlugField(_("Post slug from title"), null=False, unique=True)
     date_created = models.DateField(
         _("Post creation date"), default=now)
+    likers = models.ManyToManyField(
+        "users.CustomUser",
+        verbose_name=_("Post likers"),
+        help_text=_("Users who liked this post"),
+        related_name='likes'
+    )
 
     def __str__(self):
         """Model instance string representation."""
@@ -37,3 +43,7 @@ class Post(models.Model):
             raise ValidationError({
                 'title': _("Post title can't be create/update/delete.")
             })
+
+    def likes(self):
+        """Return number of likes under the post."""
+        return self.likers.count()
