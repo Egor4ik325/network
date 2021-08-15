@@ -1,14 +1,45 @@
 {% extends 'network/layout.html' %}
+{% load static %}
+
+{% block head %}
+    <script src="{% static 'network/posts.js' %}"></script>
+{% endblock head %}
 
 {% block body %}
-    <ul id="posts">
-        {% for post in posts %}
-            <li>
-                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <a id="post-create" class="btn btn-primary mb-3 " href="{% url 'post_create' %}">Write Post</a>
 
-    <a id="post-create" class="btn btn-primary" href="{% url 'post_create' %}">Create Post</a>
+        {% for post in posts %}
+
+            {# Render post card #}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ post.title|title }}</h5>
+                    <div class="card-subtitle mb-3 text-muted"><a href="#">@{{ post.poster.username }}</a> • {{ post.date_created|date:'d M' }}</div>
+
+                    <p class="card-text ">{{ post.body }}</p>
+
+                    <div class="card-text text-muted">
+                        <a class="post-link" href="{{ post.get_absolute_url }}">read</a> ・
+                        <a class="post-link" href="{{ post.get_absolute_url }}">edit</a> ・
+                        {# Render icon to like a post #}
+                        {% if user.is_authenticated and user in post.likers.all %}
+                            <span class="like-icon" data-liked="true" data-post="{{ post.slug }}">
+                                <i class="bi bi-suit-heart-fill" style="color: red;"></i>
+                            </span>
+                        {% else %}
+                            <span class="like-icon" data-liked="false" data-post="{{ post.slug }}">
+                                <i class="bi bi-suit-heart" style="color: red;"></i>
+                            </span>
+                        {% endif%}
+                        <span class="likes">{{ post.likes }}</span> likes
+                    </div>
+                </div>
+            </div>
+
+            {% comment %} <li>
+                <a  >{{ post.title }}</a>
+            </li> {% endcomment %}
+        {% endfor %}
+    </div>
 
 {% endblock body %}

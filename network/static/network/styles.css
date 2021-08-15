@@ -1,0 +1,10 @@
+/* Note: Cmd - Shift - R to override browser cached CSS file */
+
+.card:hover {
+    /* Hightlight card */
+    background-color: var(--bs-light) !important;
+}
+
+.like-icon {
+    cursor: pointer;
+}

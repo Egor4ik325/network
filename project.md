@@ -14,13 +14,13 @@ Core:
 New (software development process):
 
 1. server-side/client-side/continuous testing
-1. project (webapp) isolation (containerization)
+2. webapp isolation (containerization)
 
 - Testing:
     - manual testing
-    - Django unit testing
-    - client-side testing
-- CI best practicies:
+    - server-side (API) testing (django.test)
+    - client-side (UI) testing (selenium)
+- CI/CD software developmnet best practicies:
     - GitHub Actions
     - GitHub project development
 - Deployment/release:
