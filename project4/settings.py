@@ -56,7 +56,7 @@ ROOT_URLCONF = 'project4.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['project4/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -121,7 +121,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 # Where static files will be stored
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # URL to refer to static files in the root
 STATIC_URL = '/static/'
