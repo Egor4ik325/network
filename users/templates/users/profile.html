@@ -1,0 +1,15 @@
+{% extends 'network/layout.html' %}
+{% load static %}
+
+{% block head %}
+    <script>
+        {# Pass context data from template to the JavaScript as global var #}
+        var username = "{{ username|escapejs }}";
+        var userDetailPath = "{% url 'user_detail' %}";
+    </script>
+    <script type="text/javascript" src="{% static 'profile.js' %}"></script>
+{% endblock head %}
+
+{% block body %}
+    {# Body will be rendered on the client using JavaScript #}
+{% endblock body %}
