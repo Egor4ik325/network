@@ -11,7 +11,7 @@ Core:
 - user following
 - like/unlike post
 
-New (software development process):
+New (**software development process**):
 
 1. server-side/client-side/continuous testing
 2. webapp isolation (containerization)

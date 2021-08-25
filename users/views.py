@@ -1,10 +1,11 @@
 import json
 
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
+from django.utils.translation import gettext as _
 from django.urls import reverse
 from django.core import serializers
 from django.views import View
@@ -86,15 +87,44 @@ class UserDetailJSONView(View):
             return HttpResponseBadRequest("Username argument in required")
 
         user = get_object_or_404(get_user_model(), username=username)
-        # TODO: serialize only specific fields
-        data = serializers.serialize('json', [user])
+        data = serializers.serialize('json', [user], fields=(
+            'username', 'first_name', 'last_name', 'email', 'date_joined'))
         return JsonResponse(data=data, safe=False)
 
+class UserIsUserMixin(UserPassesTestMixin):
+    """Validate user is requesting user for update/delete."""
 
-class UserUpdateView(LoginRequiredMixin, UpdateView):
+    permission_denied_message = "You are not allowed to update/delete other users!"
+
+    def test_func(self):
+        """Verify user is authenticated and is requested user (for update/delete)."""
+        user = self.request.user
+        username = self.kwargs['username']
+        user2 = CustomUser.objects.get(username=username)
+        return user.is_authenticated and user == user2
+
+class UserUpdateView(UserIsUserMixin, UpdateView):
     """
     View for updating information about the user.
 
     GET: Return bound/filled HTML form for updating user.
     POST: Process data and update user model.
     """
+    template_name = 'users/update_form.html'
+    fields = ['first_name', 'last_name', 'email', 'username']
+    context_object_name = 'updating_user'
+
+    # From SingleObjectMixin.get_object
+    def get_object(self, queryset=None):
+        """
+        Return the user the view is displaying for update.
+        """
+        try:
+            # Look up object by username
+            username = self.kwargs.get('username')
+            obj = CustomUser.objects.get(username=username)
+        except queryset.model.DoesNotExist:
+            raise Http404(_("No users with username: %(username)s") % {'username': username})
+        return obj
+    
+    

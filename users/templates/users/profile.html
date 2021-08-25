@@ -6,6 +6,7 @@
         {# Pass context data from template to the JavaScript as global var #}
         var username = "{{ username|escapejs }}";
         var userDetailPath = "{% url 'user_detail' %}";
+        var userUpdatePath = "{% url 'user_update' username %}";
     </script>
     <script type="text/javascript" src="{% static 'profile.js' %}"></script>
 {% endblock head %}

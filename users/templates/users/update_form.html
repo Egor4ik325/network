@@ -1,0 +1,6 @@
+{# Server-side form rendering #}
+<form action="{% url 'user_update' updating_user.username %}" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input id="submit_button" type="submit" value="Submit">
+</form>
