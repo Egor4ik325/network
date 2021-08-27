@@ -4,6 +4,7 @@ from .views import (
     IndexView, PostListView, PostDetailView,
     PostCreateView, PostUpdateView, PostDeleteView,
     PostLikeView,
+    UserPostListJSONView,
 )
 
 urlpatterns = [
@@ -18,4 +19,7 @@ urlpatterns = [
     path('posts/delete/<slug:slug>/',
          PostDeleteView.as_view(), name='post_delete'),
     path('posts/<slug:slug>/like/', PostLikeView.as_view(), name='post_like'),
+
+    # Serve all user posts to the client
+    path('<username>/posts/', UserPostListJSONView.as_view()),
 ]

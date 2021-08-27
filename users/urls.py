@@ -12,5 +12,5 @@ urlpatterns = [
     path("<username>/profile/", views.UserProfileView.as_view(), name="profile"),
     path("user/detail/", views.UserDetailJSONView.as_view(), name="user_detail"),
     path("<username>/profile/update/", views.UserUpdateView.as_view(), name="user_update"),
-    path("get_session_username/", lambda r: JsonResponse({'username': r.user.username}) if r.user.is_authenticated else HttpResponseBadRequest("User are not signed in!"))
+    path("get_session_username/", lambda r: JsonResponse({'username': r.user.username}) if r.user.is_authenticated else HttpResponseBadRequest("User are not signed in!")),
 ]

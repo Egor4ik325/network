@@ -14,7 +14,7 @@
             <div class="card mb-3">
                 <div class="card-body">
                     <h5 class="card-title">{{ post.title|title }}</h5>
-                    <div class="card-subtitle mb-3 text-muted"><a href="#">@{{ post.poster.username }}</a> • {{ post.date_created|date:'d M' }}</div>
+                    <div class="card-subtitle mb-3 text-muted"><a href="{% url 'profile' post.poster.username %}">@{{ post.poster.username }}</a> • {{ post.date_created|date:'d M' }}</div>
 
                     <p class="card-text ">{{ post.body }}</p>
 

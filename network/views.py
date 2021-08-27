@@ -5,11 +5,14 @@ from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView,
 )
 from django.views.generic.edit import FormMixin
+from django.views.generic.list import BaseListView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.core.serializers import serialize
 
 from .models import Post
+from users.models import CustomUser
 
 
 class IndexView(TemplateView):
@@ -87,3 +90,30 @@ class PostLikeView(LoginRequiredMixin, View):
 
         # Response status_code=200
         return HttpResponse()
+
+
+class UserPostListJSONView(ListView):
+    """Respond with all user posts as JSON.
+
+    1. Get objects/queryset by username.
+    2. Serialize and return queryset as JSON (not template).
+    """
+    # Support only GET method
+    http_method_names = ['get', ]
+
+    def setup(self, *args, **kwargs):
+        """Init username url parametor as attribute."""
+        self.username = kwargs['username']
+
+        super().setup(*args, **kwargs)
+
+    def get_queryset(self):
+        """Return user's posts queryset."""
+        user = get_object_or_404(CustomUser, username=self.username)
+        return Post.objects.filter(poster=user)
+
+    def get(self, request, *arg, **kwargs):
+        """Return user posts as JSON."""
+        queryset = self.get_queryset()
+        data = serialize('json', queryset)
+        return HttpResponse(content=data, content_type="application/json", status=200)

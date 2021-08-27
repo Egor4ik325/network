@@ -4,12 +4,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const bodyElement = document.querySelector('#body');
 
     bodyElement.innerHTML = `
-    <h2>${username} profile</h2>
-    <div id="container">
+    <div id="profile" class="mb-4">
+        <h2>${username} profile</h2>
+        <div id="container">
+        </div>
+    </div>
+    <div id="posts">
+        <h3 class="mb-3">${username} posts</h3>
     </div>
     `;
 
     renderUser();
+    renderUserPosts();
 });
 
 function renderLoading() {
@@ -46,13 +52,13 @@ function renderUser() {
 
                 if (username === data.username) {
                     document.querySelector('#container').innerHTML = `
-                    <div class="btn btn-secondary btn-sm px-3 mb-4" onclick="renderUserUpdateForm()">Edit</div>
+                    <div class="btn btn-secondary btn-sm px-3" onclick="renderUserUpdateForm()">Edit</div>
                     `;
                 }
 
                 // Render webpage user template
                 document.querySelector('#container').innerHTML += `
-                <ul class="list-group">
+                <ul class="list-group mt-4">
                     <li class="list-group-item">Full name: ${fullName}</li>
                     <li class="list-group-item">Email: ${user.fields.email}</li>
                     <li class="list-group-item">Joined: in ${date} at ${time}</li>
@@ -99,4 +105,25 @@ function renderUserUpdateForm() {
                 helptext.className += ' text-muted';
             });
         })
+}
+
+async function fetchUserPosts() {
+    const response = await fetch(`/${username}/posts/`, { headers: { 'content-type': 'application/json' } });
+    const data = await response.json();
+    return data;
+}
+
+async function renderUserPosts() {
+    const posts = await fetchUserPosts();
+
+    const postsRenderedHTML = posts.map(post => {
+        return `
+        <div class="post">
+            <b>${post.fields.title}</b>
+            <p>${post.fields.body}</p>
+        </div>
+        `;
+    });
+
+    document.querySelector('#posts').innerHTML += postsRenderedHTML.join('');
 }
