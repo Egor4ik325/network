@@ -12,6 +12,7 @@ from django.views import View
 from django.views.generic import TemplateView, UpdateView
 
 from .models import CustomUser
+from .mixins import UserIsnotUserMixin
 
 
 def login_view(request):
@@ -72,7 +73,12 @@ class UserProfileView(TemplateView):
 
     template_name = 'users/profile.html'
 
-    # TODO: add kwargs.username validation before returning template (HTTP 404)
+    # ContextMixin.get_context_data
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["profile_user"] = get_object_or_404(
+            CustomUser, username=kwargs.get('username'))
+        return context
 
 
 class UserDetailJSONView(View):
@@ -91,6 +97,7 @@ class UserDetailJSONView(View):
             'username', 'first_name', 'last_name', 'email', 'date_joined'))
         return JsonResponse(data=data, safe=False)
 
+
 class UserIsUserMixin(UserPassesTestMixin):
     """Validate user is requesting user for update/delete."""
 
@@ -102,6 +109,7 @@ class UserIsUserMixin(UserPassesTestMixin):
         username = self.kwargs['username']
         user2 = CustomUser.objects.get(username=username)
         return user.is_authenticated and user == user2
+
 
 class UserUpdateView(UserIsUserMixin, UpdateView):
     """
@@ -124,7 +132,22 @@ class UserUpdateView(UserIsUserMixin, UpdateView):
             username = self.kwargs.get('username')
             obj = CustomUser.objects.get(username=username)
         except queryset.model.DoesNotExist:
-            raise Http404(_("No users with username: %(username)s") % {'username': username})
+            raise Http404(_("No users with username: %(username)s") %
+                          {'username': username})
         return obj
-    
-    
+
+
+class UserFollowView(UserIsnotUserMixin, View):
+    """Follow/unfollow specified user."""
+
+    def post(self, request, *args, **kwargs):
+        """Switch user follower."""
+        username = self.kwargs.get('username')
+        user = get_object_or_404(CustomUser, username=username)
+        if request.user in user.followers.all():
+            user.followers.remove(request.user)
+        else:
+            user.followers.add(request.user)
+
+        return JsonResponse(data={'detail': 'Successfully '
+                                  f'{"unfollowed" if request.user in user.followers.all() else "followed"}'})

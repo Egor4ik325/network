@@ -1,22 +1,78 @@
 // Django app static JS file (available for all apps via {% static %})
 
 document.addEventListener('DOMContentLoaded', () => {
-    const bodyElement = document.querySelector('#body');
+    render()
+    renderTemplate();
+    renderUser();
+    renderUserPosts();
+});
 
+function render() {
+    const bodyElement = document.querySelector('#body');
     bodyElement.innerHTML = `
     <div id="profile" class="mb-4">
-        <h2>${username} profile</h2>
-        <div id="container">
-        </div>
+    </div>
+    <div id="container" class="mb-4">
     </div>
     <div id="posts">
         <h3 class="mb-3">${username} posts</h3>
     </div>
     `;
+}
 
-    renderUser();
-    renderUserPosts();
-});
+function renderTemplate() {
+    const profileElement = document.querySelector('#profile');
+    profileElement.innerHTML = `
+    <h2>${username} profile</h2>
+    <mark>${profileUserFollows} followers</mark>
+    <button 
+        class="btn btn-outline-sucess"
+        onclick="followUnfollow()"
+        >
+        ${userIsFollowing ? 'Unfollow' : 'Follow'}
+    </button>
+    `;
+}
+
+
+function followUnfollow() {
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    fetch('/nezort11/follow/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken }
+    })
+        .then(res => {
+            if (res.ok) {
+                if (userIsFollowing) {
+                    profileUserFollows = parseInt(profileUserFollows) - 1;
+                } else {
+                    profileUserFollows = parseInt(profileUserFollows) + 1;
+                }
+
+                // Switch following state
+                userIsFollowing = !userIsFollowing;
+
+                renderTemplate();
+            }
+        })
+}
 
 function renderLoading() {
     document.querySelector('#container').innerHTML = `

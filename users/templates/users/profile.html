@@ -7,6 +7,8 @@
         var username = "{{ username|escapejs }}";
         var userDetailPath = "{% url 'user_detail' %}";
         var userUpdatePath = "{% url 'user_update' username %}";
+        var profileUserFollows = "{{ profile_user.follows|escapejs }}";
+        var userIsFollowing = {% if user.is_authenticated and user in profile_user.followers.all %}true{% else %}false{% endif %};
     </script>
     <script type="text/javascript" src="{% static 'profile.js' %}"></script>
 {% endblock head %}
