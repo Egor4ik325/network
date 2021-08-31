@@ -6,40 +6,80 @@
 {% endblock head %}
 
 {% block body %}
-    <a id="post-create" class="btn btn-primary mb-3 " href="{% url 'post_create' %}">Write Post</a>
+    <a id="post-create" class="btn btn-primary mb-3 " href="{% url 'post_create' %}">
+        Write Post
+    </a>
 
-        {% for post in posts %}
+    {% for post in posts %}
+        {# Render post card #}
+        <div class="card mb-3">
+            <div class="card-body">
+                {% comment %} Card tile/subtitle {% endcomment %}
+                <h5 class="card-title">{{ post.title|title }}</h5>
+                <div class="card-subtitle mb-3 text-muted">
+                    <a href="{% url 'profile' post.poster.username %}">
+                        @{{ post.poster.username }}
+                    </a> • {{ post.date_created|date:'d M' }}
+                </div>
 
-            {# Render post card #}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">{{ post.title|title }}</h5>
-                    <div class="card-subtitle mb-3 text-muted"><a href="{% url 'profile' post.poster.username %}">@{{ post.poster.username }}</a> • {{ post.date_created|date:'d M' }}</div>
+                <p class="card-text ">{{ post.body }}</p>
 
-                    <p class="card-text ">{{ post.body }}</p>
-
-                    <div class="card-text text-muted">
-                        <a class="post-link" href="{{ post.get_absolute_url }}">read</a> ・
-                        <a class="post-link" href="{{ post.get_absolute_url }}">edit</a> ・
-                        {# Render icon to like a post #}
-                        {% if user.is_authenticated and user in post.likers.all %}
-                            <span class="like-icon" data-liked="true" data-post="{{ post.slug }}">
-                                <i class="bi bi-suit-heart-fill" style="color: red;"></i>
-                            </span>
-                        {% else %}
-                            <span class="like-icon" data-liked="false" data-post="{{ post.slug }}">
-                                <i class="bi bi-suit-heart" style="color: red;"></i>
-                            </span>
-                        {% endif%}
-                        <span class="likes">{{ post.likes }}</span> likes
-                    </div>
+                <div class="card-text text-muted">
+                    {% comment %} Card action list {% endcomment %}
+                    <a class="post-link" href="{{ post.get_absolute_url }}">read</a> ・
+                    <a class="post-link" href="{{ post.get_absolute_url }}">edit</a> ・
+                    {# Render like icon #}
+                    {% if user.is_authenticated and user in post.likers.all %}
+                        <span class="like-icon" data-liked="true" data-post="{{ post.slug }}">
+                            <i class="bi bi-suit-heart-fill" style="color: red;"></i>
+                        </span>
+                    {% else %}
+                        <span class="like-icon" data-liked="false" data-post="{{ post.slug }}">
+                            <i class="bi bi-suit-heart" style="color: red;"></i>
+                        </span>
+                    {% endif%}
+                    {% comment %} Display number of post likes {% endcomment %}
+                    <span class="likes">{{ post.likes }}</span> likes
                 </div>
             </div>
+        </div>
+    {% endfor %}
 
-            {% comment %} <li>
-                <a  >{{ post.title }}</a>
-            </li> {% endcomment %}
-        {% endfor %}
-    </div>
+    {# Display pagination actions #}
+    {% if is_paginated %}
+        <nav aria-label="Accessability: Posts page navigation">
+            <ul class="pagination">
+                {# Go to previous page #}
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">&laquo;</a>
+                    </li>
+                {% endif %}
+                {# Go to page number i #}
+                {% for i in paginator.page_range %}
+                    {# Currently selected page #}
+                    {% if page_obj.number == i %}
+                        <li class="page-item active"><a class="page-link">{{ i }}</a></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {# Go to the next page #}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <a class="page-link">&raquo;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
 
 {% endblock body %}

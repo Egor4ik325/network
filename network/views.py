@@ -20,9 +20,14 @@ class IndexView(TemplateView):
 
 
 class PostListView(ListView):
-    model = Post
+    """Lists posts paginated by 10."""
     template_name = "network/posts.html"
+
+    # MultipleObjectsMixin
+    model = Post
     context_object_name = 'posts'
+    paginate_by = 10  # context: paginator + page_obj
+    ordering = 'date_created'
 
 
 class PostDetailView(DetailView):
