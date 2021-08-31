@@ -1,14 +1,16 @@
 # Customize Django app
 
-Custom:
+Custom back-end:
 
 - Settings
 - Apps
-- Test suites
 - Models
-- Managers
-- Forms
-- URLs
-- Views
-- Templates (client-side interface)
+  - Managers
+  - Forms
+  - Mixins
+  - Decorators
+  - Validators
+- URLs/Views
+  - Templates (client interface)
 - Admin interfaces
+- Tests
