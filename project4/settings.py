@@ -123,13 +123,14 @@ USE_TZ = True
 
 # Additional static files paths
 STATICFILES_DIRS = [
+    # projects/static/ for project-wide static files
     os.path.join(BASE_DIR, 'static/')
 ]
 
 # URL prefix for accessing static files in the STATIC_ROOT
 STATIC_URL = '/static/'
 # Where static files will be collected
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collectstatic/')
 
 # Constant for login_required redirection
 LOGIN_URL = '/login/'

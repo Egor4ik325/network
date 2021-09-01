@@ -51,8 +51,7 @@ class PostTemplateTests(LiveServerTestCase):
         self.assertEqual(self.selenium.current_url, posts_url)
 
         # Assert all posts are rendered (test DOM)
-        post_ul = self.selenium.find_element_by_id('posts')
-        posts = post_ul.find_elements_by_tag_name('li')
+        posts = self.selenium.find_elements_by_class_name('card')
         self.assertEqual(len(posts), 3)
 
     def test_post(self):
@@ -63,10 +62,10 @@ class PostTemplateTests(LiveServerTestCase):
         # Assert valid href URL
         posts_url = f'{self.live_server_url}/posts/'
         self.selenium.get(posts_url)
-        post_ul = self.selenium.find_element_by_id('posts')
-        posts = post_ul.find_elements_by_tag_name('li')
-        a = posts[0].find_element_by_tag_name('a')
-        a.click()
+        posts = self.selenium.find_elements_by_class_name('card')
+        post = posts[0]
+        read_link = post.find_element_by_link_text('read')
+        read_link.click()
         post_url = f'{self.live_server_url}/posts/{p1.slug}/'
         self.assertEqual(self.selenium.current_url, post_url)
 
@@ -90,6 +89,24 @@ class PostTemplateTests(LiveServerTestCase):
         submit = self.selenium.find_element_by_css_selector(
             'input[type=submit]')
         username, password = "testuser", "testpassword"
+        username_input.send_keys(username)
+        password_input.send_keys(password)
+        submit.click()
+
+    def logout(self):
+        self.selenium.get(reverse('logout'))
+
+    def login2(self):
+        """Log-in under second user account."""
+        login_url = f"{self.live_server_url}{reverse('login')}"
+        self.selenium.get(login_url)
+        username_input = self.selenium.find_element_by_css_selector(
+            'input[name=username]')
+        password_input = self.selenium.find_element_by_css_selector(
+            'input[name=password]')
+        submit = self.selenium.find_element_by_css_selector(
+            'input[type=submit]')
+        username, password = "testuser2", "testpassword2"
         username_input.send_keys(username)
         password_input.send_keys(password)
         submit.click()
@@ -181,3 +198,45 @@ class PostTemplateTests(LiveServerTestCase):
         self.assertRegex(self.selenium.current_url,
                          f'{self.live_server_url}/posts/')
         self.assertEqual(Post.objects.count(), 2)
+
+    def test_post_like(self):
+        """Assert post liking template + JavaScript is working."""
+        self.login()
+
+        # ! Selenium can not get /static/network/ css and js files
+        # ! Client-side JavaScript is not working while testing
+        self.selenium.get(f'{self.live_server_url}{reverse("posts")}')
+
+        # Testing post
+        p1 = Post.objects.first()
+        posts = self.selenium.find_elements_by_class_name('card')
+        post = posts[0]
+
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 0)
+        like_icon = post.find_element_by_class_name('like-icon')
+        like_icon.click()
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 1)
+        self.selenium.refresh()
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 1)
+
+        self.logout()
+        self.login2()
+        self.selenium.get(f'{self.live_server_url}{reverse("posts")}')
+
+        # Testing post
+        p1 = Post.objects.first()
+        posts = self.selenium.find_elements_by_class_name('card')
+        post = posts[0]
+
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 1)
+        like_icon = post.find_element_by_class_name('like-icon')
+        like_icon.click()
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 2)
+        self.selenium.refresh()
+        likes_number = int(post.find_element_by_class_name('likes').text)
+        self.assertEqual(likes_number, 2)

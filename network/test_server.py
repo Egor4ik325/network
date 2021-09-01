@@ -30,6 +30,10 @@ class PostModelTests(TestCase):
             username="testuser", password="testpassword")
         self.user2 = get_user_model().objects.create_user(
             username="testuser2", password="testpassword2")
+        self.user3 = get_user_model().objects.create_user(
+            username="testuser3", password="testpassword3")
+        self.user4 = get_user_model().objects.create_user(
+            username="testuser4", password="testpassword4")
 
     def test_post_validation(self):
         """Test Post model data validation."""
@@ -45,6 +49,27 @@ class PostModelTests(TestCase):
             p1.full_clean()
             p2.full_clean()
             p3.full_clean()
+
+    def test_post_likes(self):
+        """Assert likers field RelatedManager is working OK."""
+        p1 = Post.objects.create(poster=self.user, title="Post by first user",
+                                 body="This is my first post!")
+        p2 = Post.objects.create(poster=self.user2, title="Post by second user",
+                                 body="This is my first post!")
+        p3 = Post.objects.create(poster=self.user3, title="Post by third user",
+                                 body="This is my first post!")
+        p4 = Post.objects.create(poster=self.user4, title="Post by forth user",
+                                 body="This is my first post!")
+
+        p1.likers.add(self.user2, self.user3)
+        p2.likers.add(self.user, self.user4)
+        p3.likers.add(self.user, self.user2, self.user3)
+        p4.likers.add(self.user2)
+
+        self.assertEqual(self.user.likes.count(), 2)
+        self.assertEqual(self.user2.likes.count(), 3)
+        self.assertEqual(self.user3.likes.count(), 2)
+        self.assertEqual(self.user4.likes.count(), 1)
 
 
 class PostModelFormTests(TestCase):
@@ -185,3 +210,57 @@ class PostViewTests(TestCase):
         r = self.c.get(reverse('post_delete', kwargs={'slug': p3.slug}))
         # Access forbidden
         self.assertEqual(r.status_code, 403)
+
+
+# class PostLikeView(LoginRequiredMixin, View):
+#     """Switch post like state for current user."""
+
+#     def post(self, request, *args, **kwargs):
+#         """Like/unlike post."""
+#         post_object = get_object_or_404(Post, slug=self.kwargs['slug'])
+
+#         if request.user in post_object.likers.all():
+#             post_object.likers.remove(request.user)
+#         else:
+#             post_object.likers.add(request.user)
+
+#         # Response status_code=200
+#         return HttpResponse()
+
+
+    def test_like_post_login(self):
+        """Assert like view/API is requiring login."""
+        # Post for testing like func.
+        p1 = Post.objects.get(id=1)
+        self.assertEqual(p1.likes(), 0)
+        r1 = self.c.post(reverse('post_like', kwargs={'slug': p1.slug}))
+        self.assertEqual(r1.status_code, 302)
+
+    def test_like_post_405(self):
+        """Assert like view/API requires POST."""
+        self.c.login(username="testuser", password="testpassword")
+
+        # Post for testing like func.
+        p1 = Post.objects.get(id=1)
+        self.assertEqual(p1.likes(), 0)
+        r = self.c.put(reverse('post_like', kwargs={'slug': p1.slug}))
+        self.assertEqual(r.status_code, 405)
+        r = self.c.get(reverse('post_like', kwargs={'slug': p1.slug}))
+        self.assertEqual(r.status_code, 405)
+
+    def test_like_post(self):
+        """Assert like view/API is working."""
+        self.c.login(username="testuser", password="testpassword")
+
+        # Post for testing like func.
+        p1 = Post.objects.get(id=1)
+        self.assertEqual(p1.likes(), 0)
+        r1 = self.c.post(reverse('post_like', kwargs={'slug': p1.slug}))
+        self.assertEqual(r1.status_code, 200)
+        self.assertEqual(p1.likes(), 1)
+        r2 = self.c.post(reverse('post_like', kwargs={'slug': p1.slug}))
+        self.assertEqual(r2.status_code, 200)
+        self.assertEqual(p1.likes(), 0)
+        r3 = self.c.post(reverse('post_like', kwargs={
+            'slug': 'non-existing-slug'}))
+        self.assertEqual(r3.status_code, 404)
