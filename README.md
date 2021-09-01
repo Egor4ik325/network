@@ -55,10 +55,10 @@ This project leverages some techniques of the test-driven development, meaning:
 
 What features have test suites?
 
-- [x] Post CRUD views
+- [x] Post MVT/CRUD views
 - [x] Post CRUD templates
-- [x] Posts + Users
-- [x] Post like
+- [x] Posts model + Users
+- [x] Post MVT like
 - [ ] User profile
 - [ ] User posts
 - [ ] User following
