@@ -1,6 +1,10 @@
 # Base Docker image on Python 3 Docker image
 FROM python:3
 
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 # Move files to uniform location
 COPY . /usr/src/app
 WORKDIR /usr/src/app
