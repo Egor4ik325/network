@@ -106,7 +106,7 @@ class PostViewTests(TestCase):
 
     def test_valid_post(self):
         """Test /post/<id> URL route (valid id)."""
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
 
         r1 = self.c.get(f'/posts/{p1.slug}/')
         self.assertEqual(r1.status_code, 200)
@@ -152,7 +152,7 @@ class PostViewTests(TestCase):
         self.c.login(username="testuser", password="testpassword")
 
         # GET update page with form
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         r = self.c.get(f'/posts/update/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
@@ -160,13 +160,13 @@ class PostViewTests(TestCase):
         test_data = {'title': 'New title', 'body': 'New body'}
         r2 = self.c.post(f'/posts/update/{p1.slug}/', test_data)
         self.assertEqual(r2.status_code, 302)
-        updated_post = Post.objects.get(id=1)
+        updated_post = Post.objects.first()
         self.assertEqual(updated_post.title, test_data['title'])
         self.assertEqual(updated_post.body, test_data['body'])
 
     def test_update_post_login_required(self):
         """Test user should be authenticated to update any posts."""
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         r = self.c.get(reverse('post_update', kwargs={'slug': p1.slug}))
         self.assertEqual(r.status_code, 302)
         self.assertRegex(r.headers['Location'], reverse('login'))
@@ -174,7 +174,7 @@ class PostViewTests(TestCase):
     def test_update_post_owner_required(self):
         """Test user should be owner to update posts."""
         self.c.login(username="testuser", password="testpassword")
-        p3 = Post.objects.get(id=3)
+        p3 = Post.objects.last()
         r = self.c.get(reverse('post_update', kwargs={'slug': p3.slug}))
         # Access forbidden
         self.assertEqual(r.status_code, 403)
@@ -184,7 +184,7 @@ class PostViewTests(TestCase):
         self.c.login(username="testuser", password="testpassword")
 
         # GET delete confirm page
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         r = self.c.get(f'/posts/delete/{p1.slug}/')
         self.assertEqual(r.status_code, 200)
 
@@ -206,7 +206,7 @@ class PostViewTests(TestCase):
     def test_delete_post_login_required(self):
         """Test user should be owner to update posts."""
         self.c.login(username="testuser", password="testpassword")
-        p3 = Post.objects.get(id=3)
+        p3 = Post.objects.all()[2]
         r = self.c.get(reverse('post_delete', kwargs={'slug': p3.slug}))
         # Access forbidden
         self.assertEqual(r.status_code, 403)
@@ -231,7 +231,7 @@ class PostViewTests(TestCase):
     def test_like_post_login(self):
         """Assert like view/API is requiring login."""
         # Post for testing like func.
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         self.assertEqual(p1.likes(), 0)
         r1 = self.c.post(reverse('post_like', kwargs={'slug': p1.slug}))
         self.assertEqual(r1.status_code, 302)
@@ -241,7 +241,7 @@ class PostViewTests(TestCase):
         self.c.login(username="testuser", password="testpassword")
 
         # Post for testing like func.
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         self.assertEqual(p1.likes(), 0)
         r = self.c.put(reverse('post_like', kwargs={'slug': p1.slug}))
         self.assertEqual(r.status_code, 405)
@@ -253,7 +253,7 @@ class PostViewTests(TestCase):
         self.c.login(username="testuser", password="testpassword")
 
         # Post for testing like func.
-        p1 = Post.objects.get(id=1)
+        p1 = Post.objects.first()
         self.assertEqual(p1.likes(), 0)
         r1 = self.c.post(reverse('post_like', kwargs={'slug': p1.slug}))
         self.assertEqual(r1.status_code, 200)

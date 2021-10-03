@@ -2,6 +2,18 @@
 version: '3'
 
 services:
+  # Reverse to backend + serve static files when DEBUG=0
+  nginx:
+    depends_on:
+      - web
+    container_name: core_web
+    image: nginx:stable
+    restart: on-failure
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/static
+    ports:
+      - 80:80
   web:
     depends_on:
       - db # WAIT_HOSTS is set in env_file
@@ -14,6 +26,7 @@ services:
       - 8000:8000
     volumes:
       - .:/usr/src/app # volume for development
+      - static_volume:/usr/src/app/collectstatic # files for serving by Nginx
   db:
     container_name: core_db
     image: postgres:13.4
@@ -25,3 +38,4 @@ services:
 
 volumes:
   postgres_data:
+  static_volume:
