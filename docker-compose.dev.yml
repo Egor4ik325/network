@@ -1,0 +1,27 @@
+# Docker compose file for development
+version: '3'
+
+services:
+  web:
+    depends_on:
+      - db # WAIT_HOSTS is set in env_file
+    container_name: core_app
+    build: .
+    restart: always
+    env_file: project4/.env
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/usr/src/app # volume for development
+  db:
+    container_name: core_db
+    image: postgres:13.4
+    env_file: project4/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres_data:
