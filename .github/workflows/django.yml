@@ -7,11 +7,12 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.9]
+
     services:
       postgres:
         image: postgres:13.4
@@ -38,3 +39,18 @@ jobs:
     - name: Run tests
       run: |
         python manage.py test network.test_server users
+
+  deploy:
+    name: Deployment
+    needs: [test]
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Deploying
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_SERVER_IP }}
+        username: ${{ secrets.SSH_SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd ~/.scripts
+          sh docker-deploy.sh
